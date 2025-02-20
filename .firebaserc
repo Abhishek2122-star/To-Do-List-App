@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "todo-list-80c07",
+    "firebase use todo-list-80c07": "todo-list-80c07"
+  },
+  "targets": {},
+  "etags": {}
+}

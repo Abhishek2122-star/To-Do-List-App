@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <style>
+    /* Basic Reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Body styling */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: rgb(64, 109, 233);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Container for the to-do list */
+    h1 {
+      font-size: 2rem;
+      color: rgb(255, 255, 255); /* Improved readability */
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Task form */
+    #taskForm {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    #taskInput {
+      padding: 10px;
+      font-size: 1rem;
+      width: 300px;
+      margin-right: 10px;
+      border: 2px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      background-color: rgb(255, 98, 0);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: rgba(143, 108, 19, 0.69);
+    }
+
+    /* Task list styling */
+    #taskList {
+      list-style-type: none;
+      padding: 0;
+      width: 80%;
+      margin: 0 auto;
+    }
+
+    #taskList li {
+      background-color: rgba(246, 225, 89, 0.84);
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 5px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #taskList button {
+      background-color: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #taskList button:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>To-Do List</h1>
+    <form id="taskForm">
+      <input type="text" id="taskInput" placeholder="Add a new task" required>
+      <button type="submit">Add Task</button>
+    </form>
+    <ul id="taskList"></ul>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import the functions you need from the SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-p86hc8rM-pbiYTM_37dV5WEy-bmctTA",
+      authDomain: "todo-list-80c07.firebaseapp.com",
+      projectId: "todo-list-80c07",
+      storageBucket: "todo-list-80c07.firebasestorage.app",
+      messagingSenderId: "410128495863",
+      appId: "1:410128495863:web:9d0cc52b9f47c503aa0ff2",
+      measurementId: "G-5HSCYWQG3D"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const taskForm = document.getElementById('taskForm');
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+
+    // Fetch all tasks from Firestore
+    async function fetchTasks() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "tasks"));
+        taskList.innerHTML = ''; // Clear existing tasks before rendering
+        querySnapshot.forEach(doc => {
+          const taskElement = document.createElement('li');
+          taskElement.innerHTML = `
+            ${doc.data().text}
+            <button onclick="deleteTask('${doc.id}')">Delete</button>
+          `;
+          taskList.appendChild(taskElement);
+        });
+      } catch (error) {
+        console.error("Error fetching tasks: ", error);
+      }
+    }
+
+    // Add a new task to Firestore
+    taskForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const newTask = { text: taskInput.value };
+        await addDoc(collection(db, "tasks"), newTask);
+        taskInput.value = ''; // Clear the input field
+        fetchTasks(); // Refresh the task list
+      } catch (error) {
+        console.error("Error adding task: ", error);
+      }
+    });
+
+    // Delete a task from Firestore
+    window.deleteTask = async function(id) {
+      try {
+        await deleteDoc(doc(db, "tasks", id));
+        fetchTasks(); // Refresh the task list after deletion
+      } catch (error) {
+        console.error("Error deleting task: ", error);
+      }
+    };
+
+    // Load tasks on page load
+    fetchTasks();
+  </script>
+</body>
+</html>
